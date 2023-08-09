@@ -5,6 +5,8 @@ import com.bank.authorization.model.Users;
 import com.bank.authorization.security.UserDetailsServerImpl;
 import com.bank.authorization.service.UserService;
 import com.bank.authorization.util.UserValidator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Tag(name="Users", description="applications for working with users interacting with the database")
 @RestController
 public class Controller {
     private final UserService userService;
@@ -31,13 +34,14 @@ public class Controller {
         this.userDetailsServer = userDetailsServer;
     }
 
+    @Operation(summary = "Get all users from the database")
     @GetMapping
     public ResponseEntity<List<Users>> getViu() {
 
         List<Users> test = userService.getAllUsers();
         return new ResponseEntity<>(test, HttpStatus.OK);
     }
-
+    @Operation(summary = "Delete a user by id")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable long id) {
         System.out.println(id);
@@ -45,7 +49,7 @@ public class Controller {
         return ResponseEntity.ok("Пользователь успешно удален");
     }
 
-
+    @Operation(summary = "Save the user to the database")
     @PostMapping
     public ResponseEntity<?> userSave(@RequestBody @Valid UserDTO userDto,
                                       BindingResult result) {
@@ -68,6 +72,7 @@ public class Controller {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "update the user in the database")
     @PutMapping
     public ResponseEntity<?> updatePage(@Valid @RequestBody UserDTO userDto,
                                         BindingResult result) {

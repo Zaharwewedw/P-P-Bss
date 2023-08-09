@@ -25,3 +25,6 @@ spring:
     drop-first: false
   application:
     name: authorization-app
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
