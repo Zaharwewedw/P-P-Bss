@@ -44,7 +44,6 @@ public class Controller {
     @Operation(summary = "Delete a user by id")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable long id) {
-        System.out.println(id);
         userService.deleteUser(id);
         return ResponseEntity.ok("Пользователь успешно удален");
     }
@@ -95,5 +94,15 @@ public class Controller {
 
         userService.upDateUser(userDto);
         return ResponseEntity.ok("Пользователь успешно обновлен");
+    }
+    @Operation(summary = "get one user by id")
+    @GetMapping("{id}")
+    public ResponseEntity<UserDTO> getLastId (@PathVariable Long id) {
+        Users users = userService.getByIdUser(id);
+        UserDTO userDTO = new UserDTO();
+        userDTO.setPassword(users.getPassword());
+        userDTO.setProfileId(users.getProfileId());
+        userDTO.setRole(users.getRole());
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 }

@@ -1,6 +1,6 @@
 package com.bank.authorization.service;
 
-import com.bank.authorization.audit.AuditUser;
+import com.bank.authorization.model.UserAudit;
 import com.bank.authorization.repository.AuditUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ public class AuditUserServiceImpl implements AuditUserService {
 
     @Transactional
     @Override
-    public void saveAudit(AuditUser auditUser) {
+    public void saveAudit(UserAudit auditUser) {
         auditUserRepository.save(auditUser);
     }
 }

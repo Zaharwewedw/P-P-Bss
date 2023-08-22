@@ -1,69 +1,103 @@
 package com.bank.authorization.audit;
 
 import com.bank.authorization.dto.UserDTO;
+import com.bank.authorization.model.UserAudit;
 import com.bank.authorization.model.Users;
-import lombok.Getter;
-import lombok.Setter;
+import com.bank.authorization.service.AuditUserService;
+import com.bank.authorization.service.UserService;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
-import javax.persistence.*;
+import java.util.Arrays;
 import java.util.Date;
 
-@Entity
-@Table(name = "audit", schema = "auth")
-@Getter
-@Setter
+@Aspect
+@Component
+@Order(10)
 public class AuditUser {
 
-    @Column(name = "entity_type")
-    private String entityType;
-    @Column(name = "operation_type")
-    private String operationType;
-    @Column(name = "created_by")
-    private String createdBy;
-    @Column(name = "modified_by")
-    private String modifiedBy;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "created_at")
-    private Timestamp createdAtImage;
-    @Column(name = "modified_at")
-    private Timestamp modifiedAtImage;
-    public void createdAt () {
-        Date date = new Date();
-        createdAtImage = new Timestamp(date.getTime());
+    private final UserService userService;
+    private final AuditUserService auditUserService;
+    @Autowired
+    public AuditUser(UserService userService, AuditUserService auditUserService) {
+        this.userService = userService;
+        this.auditUserService = auditUserService;
     }
 
-    public void modifiedAt () {
-        Date date = new Date();
-        modifiedAtImage = new Timestamp(date.getTime());
+    @Before("execution(public void deleteUser(Long))")
+    public void auditDelete(JoinPoint joinPoint) {
+        UserAudit audit = new UserAudit();
+        Users users = userService.getByIdUser(Long.parseLong(Arrays.toString(joinPoint.getArgs()).substring(1, Arrays.toString(joinPoint.getArgs()).length() - 1)));
+        audit.setEntityType(String.valueOf(users.getClass()));
+        audit.setOperationType("delete");
+        audit.setEntityJsonImage(entityJson(users));
+        audit.setNewEntityJsonImage("NuN");
+        audit.setCreatedAtImage(timePoint());
+        audit.setModifiedAtImage(timePoint());
+        auditUserService.saveAudit(audit);
     }
-    @Column(name = "new_entity_json")
-    private String newEntityJsonImage;
-    @Column(name = "entity_json")
-    private String entityJsonImage;
-    public void newEntityJson (UserDTO us) {
-        newEntityJsonImage = "{" +
+
+
+    @Around("execution(public void upDateUser(..))")
+    public Object auditUpdateUser(ProceedingJoinPoint joinPoint) throws Throwable {
+        UserAudit audit = new UserAudit();
+        Object[] args = joinPoint.getArgs();
+        for (Object arg : args) {
+            if (arg instanceof UserDTO user) {
+                audit.setEntityType(String.valueOf(user.getClass()));
+                audit.setNewEntityJsonImage(entityJson(user));
+                audit.setEntityJsonImage(entityJson(user));
+            }
+        }
+        audit.setOperationType("update");
+        Object result = joinPoint.proceed();
+        audit.setCreatedAtImage(timePoint());
+        audit.setModifiedAtImage(timePoint());
+        auditUserService.saveAudit(audit);
+        return result;
+    }
+
+    @Before("execution(public void register(..))")
+    public void auditRegister (JoinPoint joinPoint) {
+        UserAudit audit = new UserAudit();
+        Object[] args = joinPoint.getArgs();
+        Arrays.stream(args).filter(arg -> arg instanceof UserDTO).map(arg -> (UserDTO) arg).forEach(user -> {
+            audit.setEntityType(String.valueOf(user.getClass()));
+            audit.setNewEntityJsonImage(entityJson(user));
+            audit.setEntityJsonImage(entityJson(user));
+        });
+        audit.setOperationType("post");
+        audit.setNewEntityJsonImage("NuN");
+        audit.setCreatedAtImage(timePoint());
+        audit.setModifiedAtImage(timePoint());
+        auditUserService.saveAudit(audit);
+    }
+
+    public Timestamp timePoint () {
+        Date date = new Date();
+        return  new Timestamp(date.getTime());
+    }
+
+    public String entityJson (UserDTO us) {
+        return  "{" +
                 "  \"role\":" + us.getRole() +
                 "  \"profileId\":" + us.getProfileId()+
                 "  \"password\":" + us.getPassword() +
                 "}";
     }
 
-    public void entityJson (Users us) {
-        entityJsonImage = "{" +
+    public String entityJson (Users us) {
+        return "{" +
                 "  \"role\":" + us.getRole() +
                 "  \"profileId\":" + us.getProfileId()+
                 "  \"password\":" + us.getPassword() +
                 "}";
-    }
-
-    @Override
-    public String toString() {
-        return  this.operationType + " " + this.createdAtImage + " " + this.modifiedAtImage
-                + " " + this.entityType  + " " + this.modifiedBy + " " +
-                this.createdBy;
     }
 }

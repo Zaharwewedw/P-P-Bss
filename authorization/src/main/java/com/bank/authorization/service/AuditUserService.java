@@ -1,8 +1,8 @@
 package com.bank.authorization.service;
 
-import com.bank.authorization.audit.AuditUser;
+import com.bank.authorization.model.UserAudit;
 
 public interface AuditUserService {
-    void saveAudit (AuditUser auditUser);
+    void saveAudit (UserAudit auditUser);
 
 }
