@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class UserAuditTest {
 
     @Test
@@ -26,16 +28,16 @@ public class UserAuditTest {
         userAudit.setNewEntityJsonImage("NuN");
         userAudit.setCreatedAtImage(timestamp);
 
-        Assertions.assertEquals(timestamp, userAudit.getModifiedAtImage());
-        Assertions.assertEquals(timestamp, userAudit.getCreatedAtImage());
+        assertEquals(timestamp, userAudit.getModifiedAtImage());
+        assertEquals(timestamp, userAudit.getCreatedAtImage());
 
-        Assertions.assertEquals("NuN", userAudit.getEntityJsonImage());
-        Assertions.assertEquals("NuN", userAudit.getCreatedBy());
-        Assertions.assertEquals("NuN", userAudit.getOperationType());
-        Assertions.assertEquals("NuN", userAudit.getModifiedBy());
-        Assertions.assertEquals("NuN", userAudit.getEntityType());
-        Assertions.assertEquals("NuN", userAudit.getNewEntityJsonImage());
-        Assertions.assertEquals(0L, userAudit.getId());
+        assertEquals("NuN", userAudit.getEntityJsonImage());
+        assertEquals("NuN", userAudit.getCreatedBy());
+        assertEquals("NuN", userAudit.getOperationType());
+        assertEquals("NuN", userAudit.getModifiedBy());
+        assertEquals("NuN", userAudit.getEntityType());
+        assertEquals("NuN", userAudit.getNewEntityJsonImage());
+        assertEquals(0L, userAudit.getId());
 
     }
 }
